@@ -1,6 +1,8 @@
-# Nats::Client
+# NATS Client
 
-TODO: Write a gem description
+A [NATS](https://github.com/derekcollison/nats/) Client that doesn't require EventMachine.
+
+It **should** work but use at your own risk.
 
 ## Installation
 
@@ -20,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+See https://github.com/derekcollison/nats/
 
 ## Contributing
 

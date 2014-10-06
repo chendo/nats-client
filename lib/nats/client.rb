@@ -1,3 +1,5 @@
+# Mostly from https://github.com/derekcollison/nats/
+
 require 'uri'
 require 'securerandom'
 require "timers"
@@ -633,3 +635,8 @@ module NATS
     end
   end
 end
+
+c = NATS::Client.start
+
+c.close
+
