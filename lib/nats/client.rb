@@ -113,7 +113,7 @@ module NATS
 
         socket = TCPSocket.new(@uri.host, @uri.port)
         client = new(socket, opts)
-        client.on_connect(&blk) if blk
+        blk.call if blk
         return client
       end
 
@@ -263,7 +263,7 @@ module NATS
       @pending_size = 0
       @threads = []
       start_run_loop
-      @timers = Timers::Group.new
+      @timers = Timers.new
       connection_completed # Called by EM normally
       send_connect_command
     end
@@ -635,8 +635,3 @@ module NATS
     end
   end
 end
-
-c = NATS::Client.start
-
-c.close
-
