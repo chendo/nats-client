@@ -264,8 +264,8 @@ module NATS
       @msgs_received = @msgs_sent = @bytes_received = @bytes_sent = @pings = 0
       @pending_size = 0
       @threads = []
-      start_run_loop
       @timers = Timers.new
+      start_run_loop
       connection_completed # Called by EM normally
       send_connect_command
     end
@@ -274,7 +274,12 @@ module NATS
       @threads << Thread.new do
         loop do
           interval = (@timers.wait_interval || 1).abs
-          ready_readers, _ = select(@sockets, [], nil, interval)
+          begin
+            ready_readers, _ = select(@sockets, [], nil, interval)
+          rescue Errno::EBADF
+            @sockets = []
+            unbind
+          end
 
           if ready_readers
             begin
