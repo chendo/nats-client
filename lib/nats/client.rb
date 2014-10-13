@@ -2,6 +2,7 @@
 
 require 'uri'
 require 'securerandom'
+require 'timeout'
 require "timers"
 require "json"
 
@@ -393,6 +394,19 @@ module NATS
     # when the optional callback is called.
     def flush(&blk)
       queue_server_rt(&blk) if blk
+    end
+
+    # Blocking flush
+    def flush!(timeout = 5)
+      flushed = false
+      flush do
+        flushed = true
+      end
+      Timeout.timeout(timeout) do
+        while !flushed
+          sleep 0.01
+        end
+      end
     end
 
     # Define a callback to be called when the client connection has been established.
