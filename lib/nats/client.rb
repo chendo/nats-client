@@ -291,7 +291,7 @@ module NATS
     end
 
     def send_data(data)
-      @socket.write(data)
+      @socket.send(data, 0)
     end
 
 
