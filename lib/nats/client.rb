@@ -113,6 +113,7 @@ module NATS
         check_autostart(@uri) if opts[:autostart] == true
 
         socket = TCPSocket.new(@uri.host, @uri.port)
+        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         client = new(socket, opts)
         blk.call if blk
         return client
