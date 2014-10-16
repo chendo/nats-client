@@ -1,9 +1,9 @@
 # Mostly from https://github.com/derekcollison/nats/
-
+require 'thread'
 require 'uri'
 require 'securerandom'
 require 'timeout'
-require "timers"
+require 'timers'
 require "json"
 
 module NATS
@@ -263,6 +263,8 @@ module NATS
       @connected, @closing, @reconnecting = false, false, false
       @msgs_received = @msgs_sent = @bytes_received = @bytes_sent = @pings = 0
       @pending_size = 0
+      @pending = []
+      @mutex = Mutex.new
       @threads = []
       @timers = Timers.new
       start_run_loop
@@ -503,9 +505,12 @@ module NATS
     end
 
     def flush_pending #:nodoc:
-      return unless @pending
-      send_data(@pending.join)
-      @pending, @pending_size = nil, 0
+      return unless @pending_size > 0
+      @mutex.synchronize do
+        send_data(@pending.join)
+        @pending_size = 0
+        @pending.clear
+      end
     end
 
     def receive_data(data) #:nodoc:
@@ -638,11 +643,12 @@ module NATS
     end
 
     def send_command(command, priority = false) #:nodoc:
-      @timers.after(0) { flush_pending } if (connected? && @pending.nil?)
-      @pending ||= []
-      @pending << command unless priority
-      @pending.unshift(command) if priority
-      @pending_size += command.bytesize
+      @timers.after(0) { flush_pending } if (connected? && @pending.empty?)
+      @mutex.synchronize do
+        @pending << command unless priority
+        @pending.unshift(command) if priority
+        @pending_size += command.bytesize
+      end
       flush_pending if (connected? && @pending_size > MAX_PENDING_SIZE)
       if (@options[:fast_producer_error] && pending_data_size > FAST_PRODUCER_THRESHOLD)
         err_cb.call(NATS::ClientError.new("Fast Producer: #{pending_data_size} bytes outstanding"))
