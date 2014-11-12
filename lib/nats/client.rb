@@ -278,7 +278,7 @@ module NATS
           interval = (@timers.wait_interval || 1).abs
           begin
             ready_readers, _ = select(@sockets, [], nil, interval)
-          rescue Errno::EBADF
+          rescue Errno::EBADF, IOError
             @sockets = []
             unbind
           end
