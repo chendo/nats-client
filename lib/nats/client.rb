@@ -274,7 +274,7 @@ module NATS
 
     def start_run_loop
       @threads << Thread.new do
-        loop do
+        while !@closing do
           interval = (@timers.wait_interval || 1).abs
           begin
             ready_readers, _ = select(@sockets, [], nil, interval)
