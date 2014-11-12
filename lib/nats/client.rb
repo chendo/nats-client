@@ -527,7 +527,7 @@ module NATS
             @buf = $'
           when ERR
             @buf = $'
-            err_cb.call(NATS::ServerError.new($1))
+            err_cb.call(NATS::Client::ServerError.new($1))
           when PING
             @pings += 1
             @buf = $'
@@ -541,7 +541,7 @@ module NATS
             process_info($1)
           when UNKNOWN
             @buf = $'
-            err_cb.call(NATS::ServerError.new("Unknown protocol: #{$1}"))
+            err_cb.call(NATS::Client::ServerError.new("Unknown protocol: #{$1}"))
           else
             # If we are here we do not have a complete line yet that we understand.
             return
