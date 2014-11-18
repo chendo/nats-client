@@ -267,6 +267,7 @@ module NATS
       @mutex = Mutex.new
       @threads = []
       @timers = Timers.new
+      @kicker_r, @kicker_w = IO.pipe
       start_run_loop
       connection_completed # Called by EM normally
       send_connect_command
@@ -277,13 +278,15 @@ module NATS
         while !@closing do
           interval = (@timers.wait_interval || 1).abs
           begin
-            ready_readers, _ = select(@sockets, [], nil, interval)
+            ready_readers, _ = select(@sockets + [@kicker_r], [], nil, interval)
           rescue Errno::EBADF, IOError
             @sockets = []
             unbind
           end
 
-          if ready_readers
+          if !ready_readers
+            @timers.fire
+          elsif ready_readers.include?(@socket)
             begin
               data = @socket.readpartial(4096)
               receive_data(data)
@@ -291,7 +294,8 @@ module NATS
               @sockets = []
               unbind
             end
-          else
+          elsif ready_readers.include?(@kicker_r)
+            @kicker_r.gets
             @timers.fire
           end
         end
@@ -444,6 +448,8 @@ module NATS
     end
 
     def close_connection_after_writing
+      @kicker_r.close
+      @kicker_w.close
       @socket.close
     end
 
@@ -653,7 +659,12 @@ module NATS
       if (@options[:fast_producer_error] && pending_data_size > FAST_PRODUCER_THRESHOLD)
         err_cb.call(NATS::ClientError.new("Fast Producer: #{pending_data_size} bytes outstanding"))
       end
+      kick_event_loop
       true
+    end
+
+    def kick_event_loop
+      @kicker_w.puts
     end
 
     def inspect #:nodoc:
