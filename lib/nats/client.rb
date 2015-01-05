@@ -411,13 +411,14 @@ module NATS
       queue_server_rt(&blk) if blk
     end
 
+    class FlushTimeout < ClientError; end
     # Blocking flush
     def flush!(timeout = 5)
       flushed = false
       flush do
         flushed = true
       end
-      Timeout.timeout(timeout) do
+      Timeout.timeout(timeout, FlushTimeout) do
         while !flushed
           sleep 0.01
         end
