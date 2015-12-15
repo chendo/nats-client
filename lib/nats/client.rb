@@ -481,7 +481,9 @@ module NATS
 
     def queue_server_rt(&cb) #:nodoc:
       return unless cb
-      (@pongs ||= []) << cb
+      @mutex.synchronize do
+        (@pongs ||= []) << cb
+      end
       send_command(PING_REQUEST)
     end
 
