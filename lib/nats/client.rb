@@ -296,7 +296,10 @@ module NATS
               unbind
             end
           elsif ready_readers.include?(@kicker_r)
-            @kicker_r.gets
+            begin
+              @kicker_r.gets
+            rescue IOError
+            end
             @timers.fire
           end
 
