@@ -595,6 +595,7 @@ module NATS
     end
 
     def connection_completed #:nodoc:
+      @buf = nil
       @connected = true unless @ssl
       if reconnecting?
         @reconnect_timer.cancel
