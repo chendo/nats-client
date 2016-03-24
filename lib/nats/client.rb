@@ -266,7 +266,7 @@ module NATS
       @pending = []
       @mutex = Mutex.new
       @threads = []
-      @timers = Timers.new
+      @timers = Timers::Group.new
       @kicker_r, @kicker_w = IO.pipe
       start_run_loop
       connection_completed # Called by EM normally

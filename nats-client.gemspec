@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "nats-client"
-  spec.version       = "0.1.0"
+  spec.version       = "0.2.0"
   spec.authors       = ["Jack Chen (chendo)"]
   spec.email         = ["github@chen.do"]
   spec.summary       = %q{A NATS Client that doesn't require eventmachine}
@@ -19,5 +19,5 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_dependency "timers", "~> 1.0"
+  spec.add_dependency "timers", "~> 4.0"
 end
